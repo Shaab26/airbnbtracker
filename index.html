@@ -189,9 +189,87 @@
   @media (prefers-reduced-motion:no-preference){
     .btn, .assumptions-card summary::before{transition-duration:.15s;}
   }
+
+  /* ---- password gate ---- */
+  body:not(.authed) .band,
+  body:not(.authed) main{ display:none; }
+  #pw-gate{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(155deg, var(--band) 0%, var(--band-deep) 100%);
+    padding:24px;
+  }
+  body.authed #pw-gate{ display:none; }
+  .pw-card{
+    background:var(--card-bg); border-radius:14px; padding:32px 28px;
+    max-width:340px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,0.35);
+    text-align:center;
+  }
+  .pw-card h2{font-size:18px; font-weight:700; color:var(--ink); margin-bottom:6px;}
+  .pw-card p{font-size:13px; color:var(--muted); margin:0 0 18px; line-height:1.5;}
+  .pw-card input[type="password"]{
+    width:100%; font-family:"IBM Plex Mono", monospace; font-size:15px;
+    padding:10px 12px; border:1px solid var(--hairline); border-radius:8px;
+    background:var(--page-bg); color:var(--ink); margin-bottom:12px; text-align:center; box-sizing:border-box;
+  }
+  .pw-card input[type="password"]:focus{outline:2px solid var(--accent-bright); outline-offset:1px;}
+  .pw-card button{width:100%;}
+  #pw-error{font-size:12.5px; color:var(--critical); margin-top:10px; min-height:16px;}
 </style>
 </head>
 <body>
+<div id="pw-gate">
+  <form class="pw-card" id="pw-form">
+    <h2>54 Butchers Road</h2>
+    <p>Confidential &mdash; enter the partner password to view the tracker.</p>
+    <input type="password" id="pw-input" autocomplete="current-password" placeholder="Password" autofocus>
+    <button type="submit" class="btn btn-primary">Unlock</button>
+    <div id="pw-error"></div>
+  </form>
+</div>
+<script>
+(function(){
+  "use strict";
+  var AUTH_KEY = "butchersRoadAuth";
+  var PW_HASH = "fc9184134ae5672878413fff088dd0a1db30d18dc2a855da6345c7ab592ac46f";
+
+  function toHex(buffer){
+    return Array.prototype.map.call(new Uint8Array(buffer), function(b){
+      return b.toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  function unlock(){
+    document.body.classList.add("authed");
+  }
+
+  if (localStorage.getItem(AUTH_KEY) === "1"){
+    unlock();
+  }
+
+  document.getElementById("pw-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var input = document.getElementById("pw-input");
+    var errorEl = document.getElementById("pw-error");
+    var value = input.value;
+    if (!window.crypto || !window.crypto.subtle){
+      errorEl.textContent = "Password check needs a secure (https) connection.";
+      return;
+    }
+    window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)).then(function(buf){
+      if (toHex(buf) === PW_HASH){
+        localStorage.setItem(AUTH_KEY, "1");
+        errorEl.textContent = "";
+        unlock();
+      } else {
+        errorEl.textContent = "Incorrect password.";
+        input.value = "";
+        input.focus();
+      }
+    });
+  });
+})();
+</script>
 <div class="band">
   <div class="wrap band-inner">
     <div class="brand">
