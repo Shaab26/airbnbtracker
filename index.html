@@ -1,5 +1,893 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>54 Butchers Road Tracker</title></head>
-<body></body>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>54 Butchers Road Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style id="app-style">
+  :root{
+    --page-bg:#f2f4f7;
+    --card-bg:#ffffff;
+    --ink:#14181f;
+    --ink-soft:#4b525f;
+    --muted:#898f99;
+    --hairline:#e2e5ea;
+    --band:#132445;
+    --band-deep:#0c1830;
+    --accent:#1c3557;
+    --accent-bright:#2a5ca8;
+    --accent-wash:rgba(42,92,168,0.09);
+    --good:#0ca30c;
+    --critical:#d03b3b;
+    --warn:#b3760c;
+    --gold:#9c6c15;
+    --gold-wash:rgba(184,134,47,0.12);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --page-bg:#0c0f14;
+      --card-bg:#161b22;
+      --ink:#f2f3f5;
+      --ink-soft:#c3c7ce;
+      --muted:#8b909a;
+      --hairline:#262c36;
+      --band:#0a1526;
+      --band-deep:#060d1a;
+      --accent:#5a8fd6;
+      --accent-bright:#7aa8e0;
+      --accent-wash:rgba(90,143,214,0.16);
+      --good:#0ca30c;
+      --critical:#e66767;
+      --warn:#e0ac3a;
+      --gold:#d7ab5c;
+      --gold-wash:rgba(215,171,92,0.14);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --page-bg:#0c0f14;
+    --card-bg:#161b22;
+    --ink:#f2f3f5;
+    --ink-soft:#c3c7ce;
+    --muted:#8b909a;
+    --hairline:#262c36;
+    --band:#0a1526;
+    --band-deep:#060d1a;
+    --accent:#5a8fd6;
+    --accent-bright:#7aa8e0;
+    --accent-wash:rgba(90,143,214,0.16);
+    --good:#0ca30c;
+    --critical:#e66767;
+    --warn:#e0ac3a;
+    --gold:#d7ab5c;
+    --gold-wash:rgba(215,171,92,0.14);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--page-bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:"Archivo", system-ui, sans-serif; text-wrap:balance; margin:0;}
+  .num{font-family:"IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace; font-variant-numeric:tabular-nums;}
+  a{color:var(--accent-bright);}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  /* ---- header band ---- */
+  .band{background:linear-gradient(155deg, var(--band) 0%, var(--band-deep) 100%); color:#fff;}
+  .band-inner{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding:34px 24px 26px; flex-wrap:wrap;}
+  .brand-eyebrow{font-size:12px; letter-spacing:0.10em; text-transform:uppercase; color:rgba(255,255,255,0.6); font-weight:600; margin-bottom:6px;}
+  .band h1{font-size:30px; font-weight:800; color:#fff; letter-spacing:-0.01em;}
+  .brand-sub{margin-top:6px; font-size:14px; color:rgba(255,255,255,0.72);}
+  .band-actions{display:flex; align-items:center; gap:10px;}
+  .badge{font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:5px 10px; border-radius:20px; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.85); font-weight:600;}
+  .badge.readonly{background:rgba(224,172,58,0.22); color:#f1cf8e;}
+
+  /* ---- buttons ---- */
+  .btn{font-family:inherit; font-size:13.5px; font-weight:600; border-radius:8px; padding:9px 16px; cursor:pointer; border:1px solid transparent; transition:filter .12s ease, background .12s ease;}
+  .btn:focus-visible{outline:2px solid var(--accent-bright); outline-offset:2px;}
+  .btn-primary{background:var(--accent-bright); color:#fff;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary:disabled{opacity:.55; cursor:default;}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--hairline);}
+  .btn-ghost:hover{background:var(--accent-wash);}
+  .btn-ghost-invert{background:rgba(255,255,255,0.10); color:#fff; border-color:rgba(255,255,255,0.28);}
+  .btn-ghost-invert:hover{background:rgba(255,255,255,0.18);}
+  .btn-danger-text{background:transparent; border:none; color:var(--critical); font-size:12px; font-weight:600; cursor:pointer; padding:2px 6px;}
+
+  main{padding:28px 24px 120px;}
+
+  .card{background:var(--card-bg); border:1px solid var(--hairline); border-radius:14px; padding:22px 24px; box-shadow:0 1px 2px rgba(11,11,11,0.03);}
+  .card-label{font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:600;}
+
+  /* ---- notices ---- */
+  #stale-notice{margin-bottom:18px;}
+  .notice{display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:10px; background:var(--gold-wash); border:1px solid rgba(184,134,47,0.28); font-size:13.5px; color:var(--ink-soft);}
+  .notice strong{color:var(--gold);}
+
+  /* ---- hero ---- */
+  .hero-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px;}
+  @media (max-width:720px){.hero-grid{grid-template-columns:1fr;}}
+  .hero-card{display:flex; flex-direction:column; gap:10px;}
+  .hero-figure{font-family:"Archivo", sans-serif; font-size:40px; font-weight:800; letter-spacing:-0.01em; line-height:1.05;}
+  .hero-figure.pos{color:var(--good);}
+  .hero-figure.neg{color:var(--critical);}
+  .hero-sub{font-size:13px; color:var(--muted); line-height:1.5;}
+  .toggle-row{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); margin-top:2px; cursor:pointer;}
+  .toggle-row input{accent-color:var(--accent-bright); width:15px; height:15px;}
+
+  .countdown{display:flex; gap:10px; margin:2px 0 2px;}
+  .cd-unit{background:var(--accent-wash); border-radius:9px; padding:9px 4px; min-width:58px; text-align:center;}
+  .cd-unit span{display:block; font-family:"IBM Plex Mono", monospace; font-size:21px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--accent-bright);}
+  .cd-unit label{display:block; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin-top:2px;}
+  .assumption-row{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); flex-wrap:wrap; margin-top:2px;}
+  .inline-input{display:inline-flex; align-items:center; background:var(--page-bg); border:1px solid var(--hairline); border-radius:7px; padding:3px 8px; gap:2px;}
+  .inline-input span{color:var(--muted); font-size:13px;}
+  .inline-input input{width:66px; border:none; background:transparent; font-family:"IBM Plex Mono", monospace; font-size:13.5px; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .inline-input input:focus{outline:none;}
+
+  /* ---- charts ---- */
+  .chart-card{margin-bottom:18px;}
+  .chart-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .chart-head h2{font-size:16px; font-weight:700;}
+  .legend-inline{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:14px;}
+  .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle;}
+  .dot-actual{background:var(--accent-bright);}
+  .dot-projected{background:var(--gold); }
+  .chart-svg-wrap{width:100%; overflow-x:auto;}
+  .chart-svg-wrap svg{width:100%; height:auto; display:block;}
+  .axis-label{fill:var(--muted); font-family:"IBM Plex Mono", monospace;}
+  .gridline{stroke:var(--hairline);}
+  .zero-line{stroke:var(--ink-soft); stroke-dasharray:2 3;}
+  .bar-val{fill:var(--ink-soft); font-family:"IBM Plex Mono", monospace;}
+
+  /* ---- ledger table ---- */
+  .table-scroll{overflow-x:auto;}
+  table.ledger{border-collapse:collapse; width:100%; min-width:760px; font-size:13.5px;}
+  table.ledger th{text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:600; padding:0 10px 10px; border-bottom:1px solid var(--hairline);}
+  table.ledger th:first-child, table.ledger td:first-child{text-align:left;}
+  table.ledger td{padding:9px 10px; border-bottom:1px solid var(--hairline); text-align:right; font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums; color:var(--ink);}
+  table.ledger tbody tr:hover{background:var(--accent-wash);}
+  table.ledger td.month-cell{font-family:"IBM Plex Sans", sans-serif; font-weight:600;}
+  table.ledger td.pos{color:var(--good);}
+  table.ledger td.neg{color:var(--critical);}
+  table.ledger td.muted-cell{color:var(--muted); font-family:"IBM Plex Sans", sans-serif; font-weight:400;}
+  table.ledger tfoot td{font-weight:700; border-top:2px solid var(--hairline); border-bottom:none; padding-top:11px;}
+  table.ledger input{width:100%; border:1px solid var(--hairline); border-radius:6px; padding:5px 6px; font-family:"IBM Plex Mono", monospace; font-size:13px; text-align:right; background:var(--page-bg); color:var(--ink);}
+  table.ledger input[type="month"]{font-family:"IBM Plex Sans", sans-serif; text-align:left;}
+  table.ledger input:focus{outline:2px solid var(--accent-bright); outline-offset:1px;}
+  #ledger-actions{display:flex; gap:8px;}
+
+  /* ---- assumptions ---- */
+  .assumptions-card{margin-top:18px;}
+  .assumptions-card summary{cursor:pointer; font-family:"Archivo", sans-serif; font-weight:700; font-size:15px; list-style:none; display:flex; align-items:center; gap:8px;}
+  .assumptions-card summary::-webkit-details-marker{display:none;}
+  .assumptions-card summary::before{content:"›"; display:inline-block; font-size:18px; transition:transform .15s ease; color:var(--muted);}
+  .assumptions-card[open] summary::before{transform:rotate(90deg);}
+  .assum-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px 20px; margin-top:18px;}
+  .assum-field label{display:block; font-size:11.5px; color:var(--muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em;}
+  .assum-field .inline-input{width:100%;}
+  .assum-field .inline-input input{width:100%;}
+  .assum-note{font-size:12.5px; color:var(--muted); margin-top:16px; line-height:1.6; border-top:1px solid var(--hairline); padding-top:14px;}
+
+  .foot{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); padding:22px 2px 0;}
+
+  /* ---- save bar ---- */
+  .save-bar{position:fixed; left:0; right:0; bottom:0; background:var(--band); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; box-shadow:0 -4px 18px rgba(0,0,0,0.18); z-index:40;}
+  .save-bar[hidden]{display:none;}
+  #save-status{font-size:13.5px; color:rgba(255,255,255,0.82);}
+  .save-actions{display:flex; gap:10px;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .btn, .assumptions-card summary::before{transition-duration:.15s;}
+  }
+
+  /* ---- password gate ---- */
+  body:not(.authed) .band,
+  body:not(.authed) main{ display:none; }
+  #pw-gate{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(155deg, var(--band) 0%, var(--band-deep) 100%);
+    padding:24px;
+  }
+  body.authed #pw-gate{ display:none; }
+  .pw-card{
+    background:var(--card-bg); border-radius:14px; padding:32px 28px;
+    max-width:340px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,0.35);
+    text-align:center;
+  }
+  .pw-card h2{font-size:18px; font-weight:700; color:var(--ink); margin-bottom:6px;}
+  .pw-card p{font-size:13px; color:var(--muted); margin:0 0 18px; line-height:1.5;}
+  .pw-card input[type="password"]{
+    width:100%; font-family:"IBM Plex Mono", monospace; font-size:15px;
+    padding:10px 12px; border:1px solid var(--hairline); border-radius:8px;
+    background:var(--page-bg); color:var(--ink); margin-bottom:12px; text-align:center; box-sizing:border-box;
+  }
+  .pw-card input[type="password"]:focus{outline:2px solid var(--accent-bright); outline-offset:1px;}
+  .pw-card button{width:100%;}
+  #pw-error{font-size:12.5px; color:var(--critical); margin-top:10px; min-height:16px;}
+</style>
+</head>
+<body>
+<div id="pw-gate">
+  <form class="pw-card" id="pw-form">
+    <h2>54 Butchers Road</h2>
+    <p>Confidential &mdash; enter the partner password to view the tracker.</p>
+    <input type="password" id="pw-input" autocomplete="current-password" placeholder="Password" autofocus>
+    <button type="submit" class="btn btn-primary">Unlock</button>
+    <div id="pw-error"></div>
+  </form>
+</div>
+<script>
+(function(){
+  "use strict";
+  var AUTH_KEY = "butchersRoadAuth";
+  var PW_HASH = "fc9184134ae5672878413fff088dd0a1db30d18dc2a855da6345c7ab592ac46f";
+
+  function toHex(buffer){
+    return Array.prototype.map.call(new Uint8Array(buffer), function(b){
+      return b.toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  function unlock(){
+    document.body.classList.add("authed");
+  }
+
+  if (localStorage.getItem(AUTH_KEY) === "1"){
+    unlock();
+  }
+
+  document.getElementById("pw-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var input = document.getElementById("pw-input");
+    var errorEl = document.getElementById("pw-error");
+    var value = input.value;
+    if (!window.crypto || !window.crypto.subtle){
+      errorEl.textContent = "Password check needs a secure (https) connection.";
+      return;
+    }
+    window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)).then(function(buf){
+      if (toHex(buf) === PW_HASH){
+        localStorage.setItem(AUTH_KEY, "1");
+        errorEl.textContent = "";
+        unlock();
+      } else {
+        errorEl.textContent = "Incorrect password.";
+        input.value = "";
+        input.focus();
+      }
+    });
+  });
+})();
+</script>
+<div class="band">
+  <div class="wrap band-inner">
+    <div class="brand">
+      <div class="brand-eyebrow">Serviced accommodation</div>
+      <h1>54 Butchers Road</h1>
+      <div class="brand-sub">Canning Town, London E16 &middot; <span id="conf-tag">Confidential &mdash; partners only</span></div>
+    </div>
+    <div class="band-actions">
+      <span class="badge" id="mode-badge" hidden></span>
+      <button id="edit-ledger-btn" class="btn btn-ghost-invert" type="button">Edit ledger</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="app"></div>
+  <footer class="foot">
+    <span>Figures entered by the partners &middot; not financial advice.</span>
+    <span id="last-saved-note"></span>
+  </footer>
+</main>
+
+<div class="save-bar" id="save-bar" hidden>
+  <span id="save-status">Unsaved changes</span>
+  <div class="save-actions">
+    <button id="discard-btn" class="btn btn-ghost" type="button" style="border-color:rgba(255,255,255,0.3); color:#fff;">Discard</button>
+    <button id="save-btn" class="btn btn-primary" type="button">Save changes</button>
+  </div>
+</div>
+
+<script id="app-state" type="application/json">
+{
+  "capital": { "refurb": 3207.46, "firstMonth": 6100.00, "depositPortion": 3000.00, "findersFee": 3500.00 },
+  "fixedBaseline": { "rent": 3100.00, "water": 171.36, "gasElectric": 111.00, "councilTax": 144.20, "wifi": 28.99 },
+  "assumptions": { "targetMonthlyProfit": 1000, "managementSplitPct": 30, "excludeDeposit": false },
+  "months": [
+    { "month": "2025-12", "netRevenue": 1979.00, "cleaning": 149.00, "fixedCosts": 2490.00, "occupancy": "32.3% known" },
+    { "month": "2026-01", "netRevenue": 1903.06, "cleaning": 149.00, "fixedCosts": 3450.46, "occupancy": "Not stated" },
+    { "month": "2026-02", "netRevenue": 2575.98, "cleaning": 447.00, "fixedCosts": 3200.35, "occupancy": "46.4%+ known" },
+    { "month": "2026-03", "netRevenue": 5476.84, "cleaning": 776.00, "fixedCosts": 3550.35, "occupancy": "83.9%" },
+    { "month": "2026-04", "netRevenue": 3651.26, "cleaning": 745.00, "fixedCosts": 3555.55, "occupancy": "56.7%" },
+    { "month": "2026-05", "netRevenue": 4324.34, "cleaning": 1043.00, "fixedCosts": 3555.55, "occupancy": "61.3%" },
+    { "month": "2026-06", "netRevenue": 3668.76, "cleaning": 447.00, "fixedCosts": 3555.55, "occupancy": "53.3%" }
+  ]
+}
+</script>
+
+<script id="app-script">
+(function(){
+  "use strict";
+
+  var gbp0 = new Intl.NumberFormat("en-GB", { style:"currency", currency:"GBP", minimumFractionDigits:0, maximumFractionDigits:0 });
+  var gbp2 = new Intl.NumberFormat("en-GB", { style:"currency", currency:"GBP", minimumFractionDigits:2, maximumFractionDigits:2 });
+  var MS_PER_MONTH = 30.44 * 24 * 3600 * 1000;
+
+  function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function signClass(n){ return n > 0.004 ? "pos" : (n < -0.004 ? "neg" : ""); }
+  function fmtSigned(n, fmt){ var v = fmt.format(Math.abs(n)); return (n < -0.004 ? "-" + v : (n > 0.004 && fmt === gbp0 ? "+" + v : v)); }
+  function monthLabel(m){ var p = m.split("-"); var d = new Date(Number(p[0]), Number(p[1]) - 1, 1); return d.toLocaleDateString("en-GB", { month:"long", year:"numeric" }); }
+  function monthShort(m){ var p = m.split("-"); var d = new Date(Number(p[0]), Number(p[1]) - 1, 1); return d.toLocaleDateString("en-GB", { month:"short", year:"2-digit" }); }
+  function endOfMonth(m){ var p = m.split("-"); return new Date(Number(p[0]), Number(p[1]), 0, 23, 59, 59); }
+  function startOfMonth(m){ var p = m.split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, 1); }
+  function nextMonthStr(m){ var p = m.split("-"); var d = new Date(Number(p[0]), Number(p[1]), 1); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  function fmtDate(d){ return d.toLocaleDateString("en-GB", { month:"long", year:"numeric" }); }
+
+  // ---------------------------------------------------------------
+  // state
+  // ---------------------------------------------------------------
+  var seed = JSON.parse(document.getElementById("app-state").textContent);
+  var state = JSON.parse(JSON.stringify(seed));
+  var savedState = JSON.parse(JSON.stringify(seed));
+  var ledgerEditing = false;
+  var countdownTimer = null;
+  var artifactCap = null;
+  var canWrite = true;
+
+  function isDirty(){ return JSON.stringify(state) !== JSON.stringify(savedState); }
+
+  // ---------------------------------------------------------------
+  // derived figures
+  // ---------------------------------------------------------------
+  function computeMonths(st){
+    var mgmt = st.assumptions.managementSplitPct / 100;
+    var list = st.months.slice().sort(function(a, b){ return a.month < b.month ? -1 : (a.month > b.month ? 1 : 0); });
+    return list.map(function(m){
+      var profitBeforeSplit = round2((m.netRevenue || 0) - (m.cleaning || 0) - (m.fixedCosts || 0));
+      var ownerResult, managementShare;
+      if (profitBeforeSplit > 0){
+        ownerResult = round2(profitBeforeSplit * (1 - mgmt));
+        managementShare = round2(profitBeforeSplit - ownerResult);
+      } else {
+        ownerResult = profitBeforeSplit;
+        managementShare = 0;
+      }
+      return Object.assign({}, m, { profitBeforeSplit: profitBeforeSplit, ownerResult: ownerResult, managementShare: managementShare });
+    });
+  }
+
+  function capitalTotal(st){
+    var t = st.capital.refurb + st.capital.firstMonth + st.capital.findersFee;
+    if (st.assumptions.excludeDeposit) t -= st.capital.depositPortion;
+    return round2(t);
+  }
+
+  function computeProjection(st){
+    var months = computeMonths(st);
+    var capTotal = capitalTotal(st);
+    var running = capTotal;
+    var trail = [];
+    if (months.length){
+      trail.push({ date: startOfMonth(months[0].month), exposure: capTotal, actual: true, label: "Start" });
+    }
+    months.forEach(function(m){
+      running = round2(running - m.ownerResult);
+      trail.push({ date: endOfMonth(m.month), exposure: running, actual: true, label: monthShort(m.month) });
+    });
+    var currentExposure = running;
+    var lastDate = months.length ? endOfMonth(months[months.length - 1].month) : new Date();
+    var lastMonthKey = months.length ? months[months.length - 1].month : null;
+    var target = Number(st.assumptions.targetMonthlyProfit) || 0;
+    var alreadyBrokeEven = currentExposure <= 0;
+    var breakEvenDate = null, monthsNeeded = null;
+    var projected = [];
+
+    if (alreadyBrokeEven){
+      breakEvenDate = lastDate;
+    } else if (target > 0){
+      monthsNeeded = currentExposure / target;
+      breakEvenDate = new Date(lastDate.getTime() + monthsNeeded * MS_PER_MONTH);
+      var bal = currentExposure, d = lastDate;
+      var steps = Math.min(Math.ceil(monthsNeeded) + 1, 72);
+      for (var i = 1; i <= steps; i++){
+        bal = round2(bal - target);
+        d = new Date(lastDate.getTime() + i * MS_PER_MONTH);
+        projected.push({ date: d, exposure: bal, projected: true });
+        if (bal <= 0) break;
+      }
+    }
+
+    return {
+      months: months, trail: trail, projected: projected,
+      currentExposure: currentExposure, capitalTotal: capTotal,
+      breakEvenDate: breakEvenDate, monthsNeeded: monthsNeeded,
+      alreadyBrokeEven: alreadyBrokeEven, lastDate: lastDate, lastMonthKey: lastMonthKey,
+      target: target
+    };
+  }
+
+  // ---------------------------------------------------------------
+  // charts (hand-built SVG, no library)
+  // ---------------------------------------------------------------
+  function trajectorySvg(proj){
+    var W = 760, H = 300, padL = 62, padR = 20, padT = 18, padB = 34;
+    var innerW = W - padL - padR, innerH = H - padT - padB;
+
+    var allPoints = proj.trail.concat(proj.projected);
+    if (!allPoints.length){
+      return '<div class="chart-svg-wrap"><svg viewBox="0 0 ' + W + ' ' + H + '"><text x="' + (W/2) + '" y="' + (H/2) + '" text-anchor="middle" class="axis-label" font-size="13">Add a month to see the trajectory.</text></svg></div>';
+    }
+
+    var t0 = allPoints[0].date.getTime();
+    var t1 = allPoints[allPoints.length - 1].date.getTime();
+    if (t1 === t0) t1 = t0 + MS_PER_MONTH;
+    var vals = allPoints.map(function(p){ return p.exposure; });
+    var yMax = Math.max(proj.capitalTotal, Math.max.apply(null, vals)) * 1.08;
+    var yMin = Math.min(0, Math.min.apply(null, vals));
+    if (yMax <= 0) yMax = 100;
+    var yRange = yMax - yMin || 1;
+
+    function X(t){ return padL + ((t - t0) / (t1 - t0)) * innerW; }
+    function Y(v){ return padT + innerH - ((v - yMin) / yRange) * innerH; }
+
+    var gridN = 4, gridLines = "", gridLabels = "";
+    for (var g = 0; g <= gridN; g++){
+      var val = yMin + (yRange * g / gridN);
+      var y = Y(val);
+      gridLines += '<line class="gridline" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>';
+      gridLabels += '<text class="axis-label" font-size="10.5" x="' + (padL - 8) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + gbp0.format(val).replace("£", "£") + '</text>';
+    }
+    var zeroY = Y(0);
+    var zeroLine = '<line class="zero-line" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + zeroY.toFixed(1) + '" y2="' + zeroY.toFixed(1) + '"/>' +
+      '<text class="axis-label" font-size="10" x="' + padL + '" y="' + (zeroY - 5).toFixed(1) + '" text-anchor="start">break-even line</text>';
+
+    var actualPath = proj.trail.map(function(p, i){ return (i === 0 ? "M" : "L") + X(p.date.getTime()).toFixed(1) + " " + Y(p.exposure).toFixed(1); }).join(" ");
+    var areaPath = actualPath + " L " + X(proj.trail[proj.trail.length - 1].date.getTime()).toFixed(1) + " " + Y(0).toFixed(1) + " L " + X(proj.trail[0].date.getTime()).toFixed(1) + " " + Y(0).toFixed(1) + " Z";
+
+    var projPath = "";
+    if (proj.projected.length){
+      var bridge = [proj.trail[proj.trail.length - 1]].concat(proj.projected);
+      projPath = bridge.map(function(p, i){ return (i === 0 ? "M" : "L") + X(p.date.getTime()).toFixed(1) + " " + Y(p.exposure).toFixed(1); }).join(" ");
+    }
+
+    var xTicks = "";
+    var tickPts = proj.trail.filter(function(p){ return p.label !== "Start"; });
+    var minGap = 52;
+    var chosen = [];
+    tickPts.forEach(function(p, i){
+      var x = X(p.date.getTime());
+      var isLast = i === tickPts.length - 1;
+      var lastChosenX = chosen.length ? chosen[chosen.length - 1].x : -Infinity;
+      if (isLast || x - lastChosenX >= minGap){
+        if (isLast && chosen.length && x - lastChosenX < minGap) chosen.pop();
+        chosen.push({ x: x, label: p.label });
+      }
+    });
+    chosen.forEach(function(c){
+      xTicks += '<text class="axis-label" font-size="10" x="' + c.x.toFixed(1) + '" y="' + (H - padB + 16) + '" text-anchor="middle">' + c.label + '</text>';
+    });
+
+    var markers = "";
+    proj.trail.forEach(function(p){
+      if (p.label === "Start") return;
+      markers += '<circle cx="' + X(p.date.getTime()).toFixed(1) + '" cy="' + Y(p.exposure).toFixed(1) + '" r="3" fill="var(--accent-bright)"><title>' + p.label + ": " + gbp0.format(p.exposure) + '</title></circle>';
+    });
+
+    var beMarker = "";
+    if (proj.breakEvenDate && (proj.alreadyBrokeEven || proj.projected.length)){
+      var bx = X(proj.breakEvenDate.getTime()), by = Y(proj.alreadyBrokeEven ? proj.currentExposure : Math.max(0, proj.projected.length ? proj.projected[proj.projected.length-1].exposure : 0));
+      var labelX = Math.min(bx, W - padR);
+      var labelY = by > padT + 16 ? by - 12 : by + 18;
+      beMarker = '<circle cx="' + bx.toFixed(1) + '" cy="' + by.toFixed(1) + '" r="4.5" fill="var(--gold)" stroke="var(--card-bg)" stroke-width="2"/>' +
+        '<text class="axis-label" font-size="10.5" font-weight="600" x="' + labelX.toFixed(1) + '" y="' + labelY.toFixed(1) + '" text-anchor="end" fill="var(--gold)">' + fmtDate(proj.breakEvenDate) + '</text>';
+    }
+
+    return '<div class="chart-svg-wrap"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative cash exposure trajectory toward break-even">' +
+      '<defs><linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="var(--accent-bright)" stop-opacity="0.22"/>' +
+      '<stop offset="100%" stop-color="var(--accent-bright)" stop-opacity="0.02"/>' +
+      '</linearGradient></defs>' +
+      gridLines + gridLabels + zeroLine +
+      '<path d="' + areaPath + '" fill="url(#areaFill)" stroke="none"/>' +
+      '<path d="' + actualPath + '" fill="none" stroke="var(--accent-bright)" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>' +
+      (projPath ? '<path d="' + projPath + '" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>' : "") +
+      markers + beMarker + xTicks +
+      '</svg></div>';
+  }
+
+  function barChartSvg(months){
+    var W = 760, H = 220, padL = 58, padR = 16, padT = 16, padB = 30;
+    var innerW = W - padL - padR, innerH = H - padT - padB;
+    if (!months.length){
+      return '<div class="chart-svg-wrap"><svg viewBox="0 0 ' + W + ' ' + H + '"><text x="' + (W/2) + '" y="' + (H/2) + '" text-anchor="middle" class="axis-label" font-size="13">No months recorded yet.</text></svg></div>';
+    }
+    var vals = months.map(function(m){ return m.ownerResult; });
+    var maxV = Math.max(0, Math.max.apply(null, vals)) * 1.25 || 100;
+    var minV = Math.min(0, Math.min.apply(null, vals)) * 1.25;
+    var range = maxV - minV || 1;
+    function Y(v){ return padT + innerH - ((v - minV) / range) * innerH; }
+    var zeroY = Y(0);
+    var n = months.length;
+    var slot = innerW / n;
+    var barW = Math.min(38, slot * 0.52);
+
+    var gridN = 3, gridLines = "", gridLabels = "";
+    for (var g = 0; g <= gridN; g++){
+      var val = minV + (range * g / gridN);
+      var y = Y(val);
+      gridLines += '<line class="gridline" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>';
+      gridLabels += '<text class="axis-label" font-size="10" x="' + (padL - 8) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + gbp0.format(val) + '</text>';
+    }
+
+    var bars = "", labels = "", vlabels = "";
+    months.forEach(function(m, i){
+      var cx = padL + slot * i + slot / 2;
+      var v = m.ownerResult;
+      var y0 = Y(0), y1 = Y(v);
+      var top = Math.min(y0, y1), h = Math.max(1.5, Math.abs(y1 - y0));
+      var color = v >= 0 ? "var(--good)" : "var(--critical)";
+      bars += '<rect x="' + (cx - barW/2).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="' + color + '"><title>' + monthLabel(m.month) + ": " + gbp2.format(v) + '</title></rect>';
+      labels += '<text class="axis-label" font-size="10" x="' + cx.toFixed(1) + '" y="' + (H - padB + 16) + '" text-anchor="middle">' + monthShort(m.month) + '</text>';
+      var vy = v >= 0 ? top - 6 : top + h + 12;
+      vlabels += '<text class="bar-val" font-size="10" font-weight="600" x="' + cx.toFixed(1) + '" y="' + vy.toFixed(1) + '" text-anchor="middle">' + fmtSigned(v, gbp0) + '</text>';
+    });
+
+    return '<div class="chart-svg-wrap"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Monthly owner result">' +
+      gridLines + gridLabels +
+      '<line class="zero-line" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + zeroY.toFixed(1) + '" y2="' + zeroY.toFixed(1) + '"/>' +
+      bars + labels + vlabels +
+      '</svg></div>';
+  }
+
+  // ---------------------------------------------------------------
+  // render
+  // ---------------------------------------------------------------
+  function renderLedgerRows(months, editing){
+    return months.map(function(m, idx){
+      if (editing){
+        return '<tr data-idx="' + idx + '">' +
+          '<td class="month-cell"><input type="month" data-field="month" data-idx="' + idx + '" value="' + esc(m.month) + '"></td>' +
+          '<td><input type="number" step="0.01" data-field="netRevenue" data-idx="' + idx + '" value="' + m.netRevenue + '"></td>' +
+          '<td><input type="number" step="0.01" data-field="cleaning" data-idx="' + idx + '" value="' + m.cleaning + '"></td>' +
+          '<td><input type="number" step="0.01" data-field="fixedCosts" data-idx="' + idx + '" value="' + m.fixedCosts + '"></td>' +
+          '<td class="muted-cell num">' + gbp2.format(m.profitBeforeSplit) + '</td>' +
+          '<td class="muted-cell num ' + signClass(m.ownerResult) + '">' + gbp2.format(m.ownerResult) + '</td>' +
+          '<td><input type="text" data-field="occupancy" data-idx="' + idx + '" value="' + esc(m.occupancy || "") + '" style="text-align:left;font-family:\'IBM Plex Sans\',sans-serif;"></td>' +
+          '<td><button type="button" class="btn-danger-text" data-remove="' + idx + '" title="Remove month">Remove</button></td>' +
+          '</tr>';
+      }
+      return '<tr>' +
+        '<td class="month-cell">' + monthLabel(m.month) + '</td>' +
+        '<td>' + gbp2.format(m.netRevenue) + '</td>' +
+        '<td>' + gbp2.format(m.cleaning) + '</td>' +
+        '<td>' + gbp2.format(m.fixedCosts) + '</td>' +
+        '<td>' + gbp2.format(m.profitBeforeSplit) + '</td>' +
+        '<td class="' + signClass(m.ownerResult) + '">' + gbp2.format(m.ownerResult) + '</td>' +
+        '<td class="muted-cell">' + esc(m.occupancy || "&mdash;") + '</td>' +
+        '</tr>';
+    }).join("");
+  }
+
+  function renderBody(st){
+    var proj = computeProjection(st);
+    var exposure = proj.currentExposure;
+    var exposureClass = exposure > 0.004 ? "neg" : (exposure < -0.004 ? "pos" : "");
+    var subLabel = st.assumptions.excludeDeposit
+      ? "Setup capital (excl. £" + Math.round(st.capital.depositPortion) + " recoverable deposit) plus cumulative trading result"
+      : "Setup capital plus cumulative trading result, " + (proj.months.length ? monthLabel(proj.months[0].month) + " onward" : "");
+
+    var cdBlock, assumptionRow;
+    if (proj.alreadyBrokeEven){
+      cdBlock = '<div class="hero-figure pos">Break-even reached</div><div class="hero-sub">As of ' + fmtDate(proj.lastDate) + ' &mdash; the property has recovered its setup capital and trading losses.</div>';
+      assumptionRow = "";
+    } else if (proj.target <= 0){
+      cdBlock = '<div class="countdown"><div class="cd-unit"><span>&mdash;</span><label>days</label></div><div class="cd-unit"><span>&mdash;</span><label>hrs</label></div><div class="cd-unit"><span>&mdash;</span><label>min</label></div><div class="cd-unit"><span>&mdash;</span><label>sec</label></div></div>' +
+        '<div class="hero-sub">Set a target monthly profit to project a date.</div>';
+      assumptionRow = '<div class="assumption-row"><span>Assuming</span><div class="inline-input"><span>£</span><input type="number" id="target-profit-input" min="0" step="50" value="' + st.assumptions.targetMonthlyProfit + '"></div><span>owner profit / month from here</span></div>';
+    } else {
+      cdBlock = '<div class="hero-figure" id="breakeven-date">' + fmtDate(proj.breakEvenDate) + '</div>' +
+        '<div class="countdown" id="countdown">' +
+        '<div class="cd-unit"><span id="cd-days">&ndash;</span><label>days</label></div>' +
+        '<div class="cd-unit"><span id="cd-hours">&ndash;</span><label>hrs</label></div>' +
+        '<div class="cd-unit"><span id="cd-mins">&ndash;</span><label>min</label></div>' +
+        '<div class="cd-unit"><span id="cd-secs">&ndash;</span><label>sec</label></div>' +
+        '</div>';
+      assumptionRow = '<div class="assumption-row"><span>Assuming</span><div class="inline-input"><span>£</span><input type="number" id="target-profit-input" min="0" step="50" value="' + st.assumptions.targetMonthlyProfit + '"></div><span>owner profit / month from here (' + Math.ceil(proj.monthsNeeded) + ' months to go)</span></div>';
+    }
+
+    var staleNotice = "";
+    if (proj.months.length){
+      var daysSince = Math.floor((Date.now() - proj.lastDate.getTime()) / 86400000);
+      if (daysSince > 45){
+        staleNotice = '<div class="notice"><span>&#9888;</span><span><strong>Figures run through ' + monthLabel(proj.lastMonthKey) + '.</strong> That&rsquo;s ' + daysSince + ' days ago &mdash; add newer months below to keep this projection accurate.</span></div>';
+      }
+    }
+
+    var baseTotal = round2(st.fixedBaseline.rent + st.fixedBaseline.water + st.fixedBaseline.gasElectric + st.fixedBaseline.councilTax + st.fixedBaseline.wifi);
+
+    var html = '';
+    html += '<div id="stale-notice">' + staleNotice + '</div>';
+
+    html += '<section class="hero-grid">' +
+      '<div class="card hero-card">' +
+        '<div class="card-label">Total cash exposure</div>' +
+        '<div class="hero-figure ' + exposureClass + '" id="exposure-figure">' + gbp0.format(Math.abs(exposure)) + '</div>' +
+        '<div class="hero-sub" id="exposure-sub">' + subLabel + '</div>' +
+        '<label class="toggle-row"><input type="checkbox" id="exclude-deposit-toggle" ' + (st.assumptions.excludeDeposit ? "checked" : "") + '><span>Exclude &pound;' + Math.round(st.capital.depositPortion) + ' potentially recoverable deposit</span></label>' +
+      '</div>' +
+      '<div class="card hero-card">' +
+        '<div class="card-label">Projected break-even</div>' +
+        cdBlock +
+        assumptionRow +
+      '</div>' +
+    '</section>';
+
+    html += '<section class="card chart-card">' +
+      '<div class="chart-head"><h2>Path to break-even</h2><div class="legend-inline"><span><span class="dot dot-actual"></span>Actual</span><span><span class="dot dot-projected"></span>Projected</span></div></div>' +
+      trajectorySvg(proj) +
+    '</section>';
+
+    html += '<section class="card chart-card">' +
+      '<div class="chart-head"><h2>Monthly owner result</h2></div>' +
+      barChartSvg(proj.months) +
+    '</section>';
+
+    html += '<section class="card">' +
+      '<div class="chart-head"><h2>Monthly ledger</h2><div id="ledger-actions">' +
+        (ledgerEditing ? '<button type="button" id="add-month-btn" class="btn btn-ghost" style="padding:7px 12px;">+ Add month</button>' : '') +
+      '</div></div>' +
+      '<div class="table-scroll"><table class="ledger">' +
+        '<thead><tr>' +
+          '<th>Month</th><th>Net revenue</th><th>Cleaning</th><th>Fixed costs</th><th>Profit before split</th><th>Owner result</th><th>Occupancy</th>' +
+          (ledgerEditing ? '<th></th>' : '') +
+        '</tr></thead>' +
+        '<tbody>' + renderLedgerRows(proj.months, ledgerEditing) + '</tbody>' +
+        '<tfoot><tr><td>Cumulative</td><td></td><td></td><td></td><td></td><td class="' + signClass(proj.months.reduce(function(s,m){return s+m.ownerResult;},0)) + '">' + gbp2.format(proj.months.reduce(function(s,m){return s+m.ownerResult;},0)) + '</td><td colspan="' + (ledgerEditing ? 2 : 1) + '"></td></tr></tfoot>' +
+      '</table></div>' +
+    '</section>';
+
+    html += '<details class="assumptions-card card"' + '>' +
+      '<summary>Baseline costs &amp; capital assumptions</summary>' +
+      '<div class="assum-grid">' +
+        assumField("Rent to landlord", "fixedBaseline.rent", st.fixedBaseline.rent) +
+        assumField("Water", "fixedBaseline.water", st.fixedBaseline.water) +
+        assumField("Gas &amp; electric", "fixedBaseline.gasElectric", st.fixedBaseline.gasElectric) +
+        assumField("Council tax", "fixedBaseline.councilTax", st.fixedBaseline.councilTax) +
+        assumField("WiFi", "fixedBaseline.wifi", st.fixedBaseline.wifi) +
+        assumField("Refurbishment (one-off)", "capital.refurb", st.capital.refurb) +
+        assumField("First month rent + deposit", "capital.firstMonth", st.capital.firstMonth) +
+        assumField("...of which, deposit", "capital.depositPortion", st.capital.depositPortion) +
+        assumField("Finder&rsquo;s fee", "capital.findersFee", st.capital.findersFee) +
+        assumField("Management share of profit (%)", "assumptions.managementSplitPct", st.assumptions.managementSplitPct, "%") +
+      '</div>' +
+      '<div class="assum-note">Current fixed monthly floor from the baseline above: <strong class="num">' + gbp2.format(baseTotal) + '</strong>. This is used as the default fixed-cost figure when you add a new month &mdash; each month&rsquo;s actual fixed cost can still be edited in the ledger. Owner result = profit before split in full when the month is a loss; when it&rsquo;s a profit, the management share above is deducted first.</div>' +
+    '</details>';
+
+    return html;
+  }
+
+  function assumField(label, path, value, suffix){
+    return '<div class="assum-field"><label>' + label + '</label><div class="inline-input">' +
+      (suffix === "%" ? '' : '<span>&pound;</span>') +
+      '<input type="number" step="0.01" data-path="' + path + '" value="' + value + '">' +
+      (suffix === "%" ? '<span>%</span>' : '') +
+      '</div></div>';
+  }
+
+  // ---------------------------------------------------------------
+  // countdown ticker
+  // ---------------------------------------------------------------
+  function startCountdown(breakEvenDate){
+    if (countdownTimer) clearInterval(countdownTimer);
+    if (!breakEvenDate) return;
+    function tick(){
+      var el = document.getElementById("cd-days");
+      if (!el) { clearInterval(countdownTimer); return; }
+      var diff = breakEvenDate.getTime() - Date.now();
+      if (diff < 0) diff = 0;
+      var days = Math.floor(diff / 86400000);
+      var hours = Math.floor((diff % 86400000) / 3600000);
+      var mins = Math.floor((diff % 3600000) / 60000);
+      var secs = Math.floor((diff % 60000) / 1000);
+      document.getElementById("cd-days").textContent = days;
+      document.getElementById("cd-hours").textContent = String(hours).padStart(2, "0");
+      document.getElementById("cd-mins").textContent = String(mins).padStart(2, "0");
+      document.getElementById("cd-secs").textContent = String(secs).padStart(2, "0");
+    }
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  // ---------------------------------------------------------------
+  // wire up
+  // ---------------------------------------------------------------
+  function setByPath(obj, path, value){
+    var parts = path.split(".");
+    var target = obj;
+    for (var i = 0; i < parts.length - 1; i++) target = target[parts[i]];
+    target[parts[parts.length - 1]] = value;
+  }
+
+  function render(){
+    var app = document.getElementById("app");
+    app.innerHTML = renderBody(state);
+    var proj = computeProjection(state);
+    if (!proj.alreadyBrokeEven && proj.target > 0) startCountdown(proj.breakEvenDate);
+    else if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    bindAppEvents();
+    updateSaveBar();
+    var editBtn = document.getElementById("edit-ledger-btn");
+    if (editBtn) editBtn.textContent = ledgerEditing ? "Done editing" : "Edit ledger";
+  }
+
+  function bindAppEvents(){
+    var excludeToggle = document.getElementById("exclude-deposit-toggle");
+    if (excludeToggle) excludeToggle.addEventListener("change", function(){
+      state.assumptions.excludeDeposit = excludeToggle.checked;
+      render();
+    });
+
+    var targetInput = document.getElementById("target-profit-input");
+    if (targetInput) targetInput.addEventListener("input", function(){
+      state.assumptions.targetMonthlyProfit = Number(targetInput.value) || 0;
+      render();
+      var el = document.getElementById("target-profit-input");
+      if (el) { el.focus(); el.selectionStart = el.selectionEnd = el.value.length; }
+    });
+
+    document.querySelectorAll("#app [data-path]").forEach(function(input){
+      input.addEventListener("change", function(){
+        var v = Number(input.value) || 0;
+        setByPath(state, input.getAttribute("data-path"), v);
+        render();
+      });
+    });
+
+    if (ledgerEditing){
+      document.querySelectorAll("#app [data-field]").forEach(function(input){
+        input.addEventListener("change", function(){
+          var idx = Number(input.getAttribute("data-idx"));
+          var field = input.getAttribute("data-field");
+          var proj = computeProjection(state);
+          var monthKey = proj.months[idx].month;
+          var realIdx = state.months.findIndex(function(m){ return m.month === monthKey; });
+          if (realIdx === -1) return;
+          if (field === "month" || field === "occupancy"){
+            state.months[realIdx][field] = input.value;
+          } else {
+            state.months[realIdx][field] = Number(input.value) || 0;
+          }
+          render();
+        });
+      });
+
+      document.querySelectorAll("#app [data-remove]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var idx = Number(btn.getAttribute("data-remove"));
+          var proj = computeProjection(state);
+          var monthKey = proj.months[idx].month;
+          state.months = state.months.filter(function(m){ return m.month !== monthKey; });
+          render();
+        });
+      });
+
+      var addBtn = document.getElementById("add-month-btn");
+      if (addBtn) addBtn.addEventListener("click", function(){
+        var proj = computeProjection(state);
+        var nextKey = proj.months.length ? nextMonthStr(proj.months[proj.months.length - 1].month) : new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, "0");
+        var baseTotal = round2(state.fixedBaseline.rent + state.fixedBaseline.water + state.fixedBaseline.gasElectric + state.fixedBaseline.councilTax + state.fixedBaseline.wifi);
+        state.months.push({ month: nextKey, netRevenue: 0, cleaning: 0, fixedCosts: baseTotal, occupancy: "" });
+        render();
+      });
+    }
+  }
+
+  function updateSaveBar(){
+    var bar = document.getElementById("save-bar");
+    var status = document.getElementById("save-status");
+    if (isDirty()){
+      bar.hidden = false;
+      status.textContent = "Unsaved changes";
+    } else {
+      bar.hidden = true;
+    }
+  }
+
+  document.getElementById("edit-ledger-btn").addEventListener("click", function(){
+    ledgerEditing = !ledgerEditing;
+    render();
+  });
+
+  document.getElementById("discard-btn").addEventListener("click", function(){
+    state = JSON.parse(JSON.stringify(savedState));
+    ledgerEditing = false;
+    render();
+  });
+
+  document.getElementById("save-btn").addEventListener("click", function(){
+    saveChanges();
+  });
+
+  function buildDocument(st){
+    var styleTag = document.getElementById("app-style").outerHTML;
+    var scriptTag = document.getElementById("app-script").outerHTML;
+    var fontsLinks = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">';
+    var head = '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>54 Butchers Road Tracker</title>' + fontsLinks + styleTag;
+    var body = '<div class="band"><div class="wrap band-inner"><div class="brand"><div class="brand-eyebrow">Serviced accommodation</div><h1>54 Butchers Road</h1><div class="brand-sub">Canning Town, London E16 &middot; <span id="conf-tag">Confidential &mdash; partners only</span></div></div>' +
+      '<div class="band-actions"><span class="badge" id="mode-badge" hidden></span><button id="edit-ledger-btn" class="btn btn-ghost-invert" type="button">Edit ledger</button></div></div></div>' +
+      '<main class="wrap"><div id="app"></div><footer class="foot"><span>Figures entered by the partners &middot; not financial advice.</span><span id="last-saved-note"></span></footer></main>' +
+      '<div class="save-bar" id="save-bar" hidden><span id="save-status">Unsaved changes</span><div class="save-actions"><button id="discard-btn" class="btn btn-ghost" type="button" style="border-color:rgba(255,255,255,0.3); color:#fff;">Discard</button><button id="save-btn" class="btn btn-primary" type="button">Save changes</button></div></div>' +
+      '<script id="app-state" type="application/json">' + JSON.stringify(st) + '<' + '/script>' +
+      scriptTag;
+    return "<!doctype html><html><head>" + head + "</head><body>" + body + "</body></html>";
+  }
+
+  function flashStatus(msg, isError){
+    var status = document.getElementById("save-status");
+    if (status) { status.textContent = msg; status.style.color = isError ? "#f2a4a4" : ""; }
+  }
+
+  function saveChanges(){
+    if (!canWrite){
+      flashStatus("This is a read-only view — ask the owner to open it in Claude to save.", true);
+      return;
+    }
+    if (!artifactCap){
+      flashStatus("Open this page from Claude to save changes.", true);
+      return;
+    }
+    var btn = document.getElementById("save-btn");
+    btn.disabled = true;
+    flashStatus("Saving…");
+    artifactCap.publish(buildDocument(state)).catch(function(err){
+      btn.disabled = false;
+      var code = err && err.code;
+      if (code === "conflict"){
+        flashStatus("Someone else just saved — reloading with the latest version.");
+      } else if (code === "not_writer" || code === "not_granted"){
+        canWrite = false;
+        setReadOnlyBadge();
+        flashStatus("This is a read-only view for you.", true);
+      } else {
+        flashStatus("Couldn’t save — try again.", true);
+      }
+    });
+  }
+
+  function setReadOnlyBadge(){
+    var badge = document.getElementById("mode-badge");
+    var editBtn = document.getElementById("edit-ledger-btn");
+    if (badge) { badge.hidden = false; badge.textContent = "Read only"; badge.classList.add("readonly"); }
+    if (editBtn) editBtn.hidden = true;
+  }
+
+  async function initCapability(){
+    try {
+      if (window.claude && typeof window.claude.use === "function"){
+        artifactCap = await window.claude.use("artifact");
+      }
+    } catch (e){ artifactCap = null; }
+    if (!artifactCap){
+      canWrite = false;
+    }
+  }
+
+  render();
+  initCapability();
+})();
+</script>
+</body>
 </html>
