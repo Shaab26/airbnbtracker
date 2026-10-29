@@ -312,7 +312,10 @@
     { "month": "2026-03", "netRevenue": 5476.84, "cleaning": 776.00, "fixedCosts": 3550.35, "occupancy": "83.9%" },
     { "month": "2026-04", "netRevenue": 3651.26, "cleaning": 745.00, "fixedCosts": 3555.55, "occupancy": "56.7%" },
     { "month": "2026-05", "netRevenue": 4324.34, "cleaning": 1043.00, "fixedCosts": 3555.55, "occupancy": "61.3%" },
-    { "month": "2026-06", "netRevenue": 3668.76, "cleaning": 447.00, "fixedCosts": 3555.55, "occupancy": "53.3%" }
+    { "month": "2026-06", "netRevenue": 3668.76, "cleaning": 447.00, "fixedCosts": 3555.55, "occupancy": "53.3%" },
+    { "month": "2026-07", "netRevenue": 6499.92, "cleaning": 1043.00, "fixedCosts": 3555.55, "occupancy": "93.3%" },
+    { "month": "2026-08", "netRevenue": 2893.18, "cleaning": 691.00, "fixedCosts": 3610.55, "occupancy": "15 nights (new mgmt.) + early-Aug legacy booking, nights unknown", "splitAtSource": true, "note": "Net revenue = £2,447.04 new-management owner payout + £446.14 legacy post-deduction payout from the previous management company for a booking at the start of August (not on the new company's statement)." },
+    { "month": "2026-09", "netRevenue": 4176.25, "cleaning": 701.00, "fixedCosts": 3610.55, "occupancy": "22 nights (73.3%)", "splitAtSource": true }
   ]
 }
 </script>
@@ -358,7 +361,10 @@
     return list.map(function(m){
       var profitBeforeSplit = round2((m.netRevenue || 0) - (m.cleaning || 0) - (m.fixedCosts || 0));
       var ownerResult, managementShare;
-      if (profitBeforeSplit > 0){
+      if (m.splitAtSource){
+        ownerResult = profitBeforeSplit;
+        managementShare = 0;
+      } else if (profitBeforeSplit > 0){
         ownerResult = round2(profitBeforeSplit * (1 - mgmt));
         managementShare = round2(profitBeforeSplit - ownerResult);
       } else {
@@ -570,7 +576,7 @@
           '</tr>';
       }
       return '<tr>' +
-        '<td class="month-cell">' + monthLabel(m.month) + '</td>' +
+        '<td class="month-cell">' + monthLabel(m.month) + (m.splitAtSource ? ' <span title="New management company: their fee is already taken out of net revenue before it reaches this ledger, so the profit-split % below does not apply." style="color:var(--gold); cursor:help;">&dagger;</span>' : '') + '</td>' +
         '<td>' + gbp2.format(m.netRevenue) + '</td>' +
         '<td>' + gbp2.format(m.cleaning) + '</td>' +
         '<td>' + gbp2.format(m.fixedCosts) + '</td>' +
@@ -657,6 +663,7 @@
         '<tbody>' + renderLedgerRows(proj.months, ledgerEditing) + '</tbody>' +
         '<tfoot><tr><td>Cumulative</td><td></td><td></td><td></td><td></td><td class="' + signClass(proj.months.reduce(function(s,m){return s+m.ownerResult;},0)) + '">' + gbp2.format(proj.months.reduce(function(s,m){return s+m.ownerResult;},0)) + '</td><td colspan="' + (ledgerEditing ? 2 : 1) + '"></td></tr></tfoot>' +
       '</table></div>' +
+      (proj.months.some(function(m){ return m.splitAtSource; }) ? '<div class="assum-note" style="margin-top:12px; border-top:none; padding-top:0;">&dagger; New management company (Aug 2026 onward): their fee is taken directly from booking revenue before it reaches this ledger &mdash; net revenue is already post-fee, so the management split % below is not applied again for these months.</div>' : '') +
     '</section>';
 
     html += '<details class="assumptions-card card"' + '>' +
